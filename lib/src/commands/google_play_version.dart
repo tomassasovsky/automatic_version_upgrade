@@ -246,15 +246,16 @@ class GooglePlayVersionCommand extends Command<int> {
       NextVersion.values.byName(_argResults['next'] as String? ?? 'never');
 
   Directory get _outputDirectory {
-    final rest = _argResults.rest;
+    final rest = List<String>.from(_argResults.rest);
     _validateOutputDirectoryArg(rest);
     return Directory(rest.first);
   }
 
   void _validateOutputDirectoryArg(List<String> args) {
     _logger.detail('Validating output directory args: $args');
+
     if (args.isEmpty) {
-      usageException('No option specified for the output directory.');
+      args.add(Directory.current.path);
     }
 
     if (args.length > 1) {
