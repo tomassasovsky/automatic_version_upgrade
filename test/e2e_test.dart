@@ -19,7 +19,6 @@ void main() {
       late Analytics analytics;
       late Logger logger;
       late Progress progress;
-      // ignore: unused_local_variable
       late AutomaticVersionUpgraderCommandRunner commandRunner;
 
       void _removeTemporaryFiles() {
@@ -52,19 +51,14 @@ void main() {
           analytics: analytics,
           logger: logger,
         );
+      });
 
-        // TODO(tomassasovsky): add command runner tests
-        test(
-          'version check',
-          () async {
-            final result = await commandRunner.run(
-              ['--version'],
-            );
-
-            expect(result, equals(ExitCode.success.code));
-          },
-          tags: const Tags(['e2e']),
+      test('version', () async {
+        final result = await commandRunner.run(
+          ['--version'],
         );
+
+        expect(result, equals(ExitCode.success.code));
       });
     },
     timeout: const Timeout(Duration(seconds: 90)),
