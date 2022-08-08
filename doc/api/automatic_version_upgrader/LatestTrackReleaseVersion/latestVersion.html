@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the latestVersion property from the LatestTrackReleaseVersion extension, for the Dart programming language.">
+  <title>latestVersion property - LatestTrackReleaseVersion extension - automatic_version_upgrader library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+
+  
+</head>
+
+
+<body data-base-href="../../"
+      data-using-base-href="false">
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">automatic_version_upgrader</a></li>
+    <li><a href="../../automatic_version_upgrader/automatic_version_upgrader-library.html">automatic_version_upgrader</a></li>
+    <li><a href="../../automatic_version_upgrader/LatestTrackReleaseVersion.html">LatestTrackReleaseVersion</a></li>
+    <li class="self-crumb">latestVersion property</li>
+  </ol>
+  <div class="self-name">latestVersion</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<main>
+
+
+  <div id="dartdoc-main-content" class="main-content">
+      <div>
+<h1><span class="kind-property">latestVersion</span> property 
+    <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
+</h1></div>
+
+
+        
+<section id="getter">
+
+<section class="multi-line-signature">
+  <span class="returntype"><a href="https://pub.dev/documentation/pub_semver/2.1.1/pub_semver/Version-class.html">Version</a></span>
+  <span class="name ">latestVersion</span>
+  
+
+</section>
+
+
+<section class="desc markdown">
+  <p>Returns the latest version of the app.</p>
+</section>
+
+
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">Version get latestVersion {
+  final strippedToVersion = &lt;Version, Version&gt;{};
+
+  this?.forEach((element) {
+    final name = element.name ?? Version.none.toString();
+    final buildList = (element.versionCodes ?? []).map(int.parse).toList()
+      ..sort();
+
+    var latestBuildNumber = 0;
+    try {
+      latestBuildNumber = buildList.last;
+    } catch (_) {}
+
+    if (name.contains(&#39;(&#39;)) {
+      final versionStr = name.substring(
+        name.indexOf(&#39;(&#39;) + 1,
+        name.indexOf(&#39;)&#39;),
+      );
+
+      if (versionStr.isNotEmpty) {
+        final version = Version.parse(versionStr).copy(
+          build: latestBuildNumber.toString(),
+        );
+
+        strippedToVersion.addAll({
+          version.stripPreRelease(): version,
+        });
+      }
+    } else {
+      final version = Version.parse(name).copy(
+        build: latestBuildNumber.toString(),
+      );
+
+      strippedToVersion.addAll({
+        version.stripPreRelease(): version,
+      });
+    }
+  });
+
+  final primary = Version.primary(strippedToVersion.keys.toList());
+  return strippedToVersion[primary] ?? Version.none;
+}</code></pre>
+</section>
+
+</section>
+
+
+  </div> <!-- /.main-content -->
+
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+  <li><a href="../../index.html">automatic_version_upgrader</a></li>
+  <li><a href="../../automatic_version_upgrader/automatic_version_upgrader-library.html">automatic_version_upgrader</a></li>
+  <li><a href="../../automatic_version_upgrader/LatestTrackReleaseVersion.html">LatestTrackReleaseVersion</a></li>
+  <li class="self-crumb">latestVersion property</li>
+</ol>
+
+
+    <h5>LatestTrackReleaseVersion extension</h5>
+    <ol>
+
+
+
+
+    <li class="section-title"> <a href="../../automatic_version_upgrader/LatestTrackReleaseVersion.html#instance-properties">Properties</a>
+    </li>
+    <li><a href="../../automatic_version_upgrader/LatestTrackReleaseVersion/latestVersion.html">latestVersion</a></li>
+
+
+
+
+
+</ol>
+
+  </div><!--/.sidebar-offcanvas-->
+
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+
+</main>
+
+<footer>
+  <span class="no-break">
+    automatic_version_upgrader
+      0.1.0
+  </span>
+
+  
+</footer>
+
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/script.js?v1"></script>
+
+
+
+</body>
+
+</html>
+

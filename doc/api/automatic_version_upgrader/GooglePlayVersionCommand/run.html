@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the run method from the GooglePlayVersionCommand class, for the Dart programming language.">
+  <title>run method - GooglePlayVersionCommand class - automatic_version_upgrader library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+
+  
+</head>
+
+
+<body data-base-href="../../"
+      data-using-base-href="false">
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">automatic_version_upgrader</a></li>
+    <li><a href="../../automatic_version_upgrader/automatic_version_upgrader-library.html">automatic_version_upgrader</a></li>
+    <li><a href="../../automatic_version_upgrader/GooglePlayVersionCommand-class.html">GooglePlayVersionCommand</a></li>
+    <li class="self-crumb">run method</li>
+  </ol>
+  <div class="self-name">run</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<main>
+
+
+  <div id="dartdoc-main-content" class="main-content">
+      <div>
+<h1><span class="kind-method">run</span> method 
+    <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+<div>
+  <ol class="annotation-list">
+    <li>@<a href="https://api.dart.dev/stable/2.17.6/dart-core/override-constant.html">override</a></li>
+  </ol>
+</div>
+
+<span class="returntype"><a href="https://api.dart.dev/stable/2.17.6/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/2.17.6/dart-core/int-class.html">int</a></span>&gt;</span></span>
+<span class="name ">run</span>(<wbr>)
+
+      <div class="features">override</div>
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Runs this command.</p>
+<p>The return value is wrapped in a <code>Future</code> if necessary and returned by
+<a href="https://pub.dev/documentation/args/2.3.1/command_runner/CommandRunner/runCommand.html">CommandRunner.runCommand</a>.</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">@override
+Future&lt;int&gt; run() async {
+  final accountCredentialsArg = _credentials;
+  final packageName = _packageName;
+  final upgradeMode = _upgradeMode;
+  final next = _next;
+  final outputDir = _outputDirectory;
+
+  _logger.write(&#39;\n&#39;);
+
+  late AutoRefreshingAuthClient baseClient;
+
+  try {
+    baseClient = await clientViaServiceAccount(
+      ServiceAccountCredentials.fromJson(
+        (json.decode(accountCredentialsArg) as Map).cast&lt;String, dynamic&gt;(),
+      ),
+      [AndroidPublisherApi.androidpublisherScope],
+    );
+  } catch (e) {
+    _logger.err(&#39;Error getting client: $e&#39;);
+    usageException(_invalidCredentialsError);
+  }
+
+  final appLatestVersionProgress =
+      _logger.progress(&#39;Getting latest version...&#39;);
+
+  final publisherApi = AndroidPublisherApi(baseClient);
+  final edit = await _createAppEdit(publisherApi, packageName);
+
+  final list = await publisherApi.edits.tracks.list(
+    packageName,
+    edit.id!,
+  );
+
+  final latestVersion = list.latestVersion;
+
+  appLatestVersionProgress.update(&#39;Cleaning up&#39;);
+  await _deleteAppEdit(publisherApi, packageName, edit);
+
+  appLatestVersionProgress.complete(
+    &#39;The latest version in Google Play Console is ${green.wrap(
+      list.latestVersion.toString(),
+    )}&#39;,
+  );
+
+  if (upgradeMode == UpgradeMode.never) {
+    exit(ExitCode.success.code);
+  }
+
+  late final PubSpec pubspec;
+
+  try {
+    pubspec = await PubSpec.load(outputDir);
+  } catch (e) {
+    _logger.err(
+      &#39;An error occured loading the pubspec.yaml file. &#39;
+      &#39;Check that you are in the root of the project and &#39;
+      &#39;that the file is properly formatted.&#39;,
+    );
+    exit(ExitCode.ioError.code);
+  }
+
+  final currentVersion = pubspec.version ?? Version.none;
+  final hasNewerVersion = currentVersion &lt;= latestVersion;
+  final shouldUpgrade = upgradeMode == UpgradeMode.always ||
+      hasNewerVersion &amp;&amp; upgradeMode == UpgradeMode.outdated;
+
+  final latestIsPreRelease = latestVersion.isPreRelease;
+
+  if (!shouldUpgrade) {
+    _logger.success(
+      &#39;The app version is already higher than the one &#39;
+      &#39;in Google Cloud Console.&#39;,
+    );
+    exit(ExitCode.success.code);
+  }
+
+  final versionUpgradingProgress =
+      _logger.progress(&#39;Upgrading the app to the latest version&#39;);
+
+  late final Version nextVersion;
+  if (next == NextVersion.build) {
+    if (latestIsPreRelease) {
+      nextVersion = latestVersion.next(next);
+    } else {
+      nextVersion = latestVersion.next(NextVersion.patch).next(next);
+    }
+  } else {
+    nextVersion = latestVersion.next(next).next(next);
+  }
+
+  try {
+    final updatedPubspc = pubspec.copy(version: nextVersion);
+    await updatedPubspc.save(outputDir);
+
+    versionUpgradingProgress
+        .complete(green.wrap(&#39;Version upgraded to $nextVersion&#39;));
+    &#47;&#47; _logger.success(&#39;The app version has been upgraded to $nextVersion.&#39;);
+  } catch (e) {
+    versionUpgradingProgress.fail(
+      &#39;An error occured updating the pubspec.yaml file. &#39;
+      &#39;Check that you are in the root of the project and &#39;
+      &#39;that the file is properly formatted.&#39;,
+    );
+
+    exit(ExitCode.ioError.code);
+  }
+
+  exit(ExitCode.success.code);
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+  <li><a href="../../index.html">automatic_version_upgrader</a></li>
+  <li><a href="../../automatic_version_upgrader/automatic_version_upgrader-library.html">automatic_version_upgrader</a></li>
+  <li><a href="../../automatic_version_upgrader/GooglePlayVersionCommand-class.html">GooglePlayVersionCommand</a></li>
+  <li class="self-crumb">run method</li>
+</ol>
+
+
+    <h5>GooglePlayVersionCommand class</h5>
+    <ol>
+
+        <li class="section-title"><a href="../../automatic_version_upgrader/GooglePlayVersionCommand-class.html#constructors">Constructors</a></li>
+          <li><a href="../../automatic_version_upgrader/GooglePlayVersionCommand/GooglePlayVersionCommand.html">GooglePlayVersionCommand</a></li>
+
+
+    <li class="section-title">
+      <a href="../../automatic_version_upgrader/GooglePlayVersionCommand-class.html#instance-properties">Properties</a>
+    </li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/aliases.html">aliases</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/argParser.html">argParser</a></li>
+    <li><a href="../../automatic_version_upgrader/GooglePlayVersionCommand/argResultOverrides.html">argResultOverrides</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/argResults.html">argResults</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/category.html">category</a></li>
+    <li><a href="../../automatic_version_upgrader/GooglePlayVersionCommand/description.html">description</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/globalResults.html">globalResults</a></li>
+    <li class="inherited"><a href="https://api.dart.dev/stable/2.17.6/dart-core/Object/hashCode.html">hashCode</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/hidden.html">hidden</a></li>
+    <li><a href="../../automatic_version_upgrader/GooglePlayVersionCommand/invocation.html">invocation</a></li>
+    <li><a href="../../automatic_version_upgrader/GooglePlayVersionCommand/name.html">name</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/parent.html">parent</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/runner.html">runner</a></li>
+    <li class="inherited"><a href="https://api.dart.dev/stable/2.17.6/dart-core/Object/runtimeType.html">runtimeType</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/subcommands.html">subcommands</a></li>
+    <li><a href="../../automatic_version_upgrader/GooglePlayVersionCommand/summary.html">summary</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/takesArguments.html">takesArguments</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/usage.html">usage</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/usageFooter.html">usageFooter</a></li>
+
+    <li class="section-title"><a href="../../automatic_version_upgrader/GooglePlayVersionCommand-class.html#instance-methods">Methods</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/addSubcommand.html">addSubcommand</a></li>
+    <li class="inherited"><a href="https://api.dart.dev/stable/2.17.6/dart-core/Object/noSuchMethod.html">noSuchMethod</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/printUsage.html">printUsage</a></li>
+    <li><a href="../../automatic_version_upgrader/GooglePlayVersionCommand/run.html">run</a></li>
+    <li class="inherited"><a href="https://api.dart.dev/stable/2.17.6/dart-core/Object/toString.html">toString</a></li>
+    <li class="inherited"><a href="https://pub.dev/documentation/args/2.3.1/command_runner/Command/usageException.html">usageException</a></li>
+
+    <li class="section-title inherited"><a href="../../automatic_version_upgrader/GooglePlayVersionCommand-class.html#operators">Operators</a></li>
+    <li class="inherited"><a href="https://api.dart.dev/stable/2.17.6/dart-core/Object/operator_equals.html">operator ==</a></li>
+
+
+
+
+</ol>
+
+  </div><!--/.sidebar-offcanvas-->
+
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+
+</main>
+
+<footer>
+  <span class="no-break">
+    automatic_version_upgrader
+      0.1.0
+  </span>
+
+  
+</footer>
+
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/script.js?v1"></script>
+
+
+
+</body>
+
+</html>
+

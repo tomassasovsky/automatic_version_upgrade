@@ -1,4 +1,4 @@
-# Very Good CLI
+# Automatic Version Upgrader
 
 [![ci][ci_badge]][ci_link]
 [![coverage][coverage_badge]][ci_link]
