@@ -54,6 +54,17 @@ void main() {
         );
 
         // TODO(tomassasovsky): add command runner tests
+        test(
+          'version check',
+          () async {
+            final result = await commandRunner.run(
+              ['--version'],
+            );
+
+            expect(result, equals(ExitCode.success.code));
+          },
+          tags: const Tags(['e2e']),
+        );
       });
     },
     timeout: const Timeout(Duration(seconds: 90)),
