@@ -9,7 +9,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec/pubspec.dart';
 import 'package:universal_io/io.dart';
 
-final _privateKeyRegExp = RegExp(r'-{3,}\n([\s\S]*?)\n-{3,}');
+final _privateKeyRegExp = RegExp(r'\s*(\bBEGIN\b).*(PRIVATE KEY\b)\s*');
 
 /// {@template app_store_version_command}
 /// `automatic_version_upgrader app-store-version` command which gets the
@@ -182,7 +182,7 @@ class AppStoreVersionCommand extends Command<int> {
     late final PubSpec pubspec;
 
     try {
-      pubspec = await PubSpec.load(Directory.current);
+      pubspec = await PubSpec.load(_outputDirectory);
     } catch (e) {
       _logger.err(
         'An error occured loading the pubspec.yaml file. '
@@ -220,7 +220,7 @@ class AppStoreVersionCommand extends Command<int> {
 
     try {
       final updatedPubspc = pubspec.copy(version: nextVersion);
-      await updatedPubspc.save(Directory.current);
+      await updatedPubspc.save(_outputDirectory);
 
       versionUpgradingProgress.complete();
       _logger.success('The app version has been upgraded to $nextVersion.');
@@ -261,11 +261,29 @@ class AppStoreVersionCommand extends Command<int> {
   NextVersion get _next =>
       NextVersion.values.byName(_argResults['next'] as String? ?? 'never');
 
+  Directory get _outputDirectory {
+    final rest = List<String>.from(_argResults.rest);
+    _validateOutputDirectoryArg(rest);
+    return Directory(rest.first);
+  }
+
   void _validatePrivateKey(String? key) {
     _logger.detail('Validating private key; $key');
     final isValidPrivateKey = _isValidPrivateKey(key ?? '');
     if (!isValidPrivateKey) {
       usageException('The private key is invalid.');
+    }
+  }
+
+  void _validateOutputDirectoryArg(List<String> args) {
+    _logger.detail('Validating output directory args: $args');
+
+    if (args.isEmpty) {
+      args.add(Directory.current.path);
+    }
+
+    if (args.length > 1) {
+      usageException('Multiple output directories specified.');
     }
   }
 
