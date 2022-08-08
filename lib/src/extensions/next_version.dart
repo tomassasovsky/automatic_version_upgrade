@@ -1,4 +1,4 @@
-import 'package:app_store_connect_api/app_store_connect_api.dart';
+import 'package:automatic_version_upgrader/automatic_version_upgrader.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 /// What to do upgrade in the app's version:
