@@ -134,9 +134,9 @@ Available commands:
 Run "automatic_version_upgrader help <command>" for more information about a command.
 ```
 
-[ci_badge]: https://github.com/tomassasovsky/automatic_version_upgrader/workflows/automatic_version_upgrader/badge.svg
-[ci_link]: https://github.com/tomassasovsky/automatic_version_upgrader/actions
-[coverage_badge]: https://raw.githubusercontent.com/tomassasovsky/automatic_version_upgrader/main/coverage_badge.svg
+[ci_badge]: https://github.com/tomassasovsky/automatic_version_upgrader.dart/workflows/automatic_version_upgrader/badge.svg
+[ci_link]: https://github.com/tomassasovsky/automatic_version_upgrader.dart/actions
+[coverage_badge]: https://raw.githubusercontent.com/tomassasovsky/automatic_version_upgrader.dart/master/coverage_badge.svg
 [license_badge]: https://img.shields.io/badge/license-MIT-blue.svg
 [license_link]: https://opensource.org/licenses/MIT
 [pub_badge]: https://img.shields.io/pub/v/automatic_version_upgrader.svg
