@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-beta+5
+
+* Updated app_store_connect_version to 0.1.0+1
+
 ## 0.1.0+4
 
 * Bug-fix: Parsing names from Google Play Store breaks when the name is not a version.

@@ -1,5 +1,5 @@
 name: automatic_version_upgrader
-version: 0.1.0+4
+version: 0.1.0-beta+5
 description: A command line interface to upgrade your app version automatically in a CI/CD flow.
 homepage: https://github.com/tomassasovsky/automatic_version_upgrader.dart
 
@@ -7,7 +7,7 @@ environment:
   sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
-  app_store_connect_app_versions: ^0.1.0
+  app_store_connect_app_versions: ^0.1.0+1
   args: ^2.3.1
   equatable: ^2.0.3
   googleapis: ^9.1.0
