@@ -49,24 +49,32 @@ extension LatestTrackReleaseVersion on List<TrackRelease>? {
         );
 
         if (versionStr.isNotEmpty) {
-          final version = Version.parse(versionStr).copy(
+          try {
+            final version = Version.parse(versionStr).copy(
+              build: latestBuildNumber.toString(),
+            );
+
+            strippedToVersion.addAll({
+              version.stripPreRelease(): version,
+            });
+          } catch (_) {}
+        }
+      } else {
+        try {
+          final version = Version.parse(name).copy(
             build: latestBuildNumber.toString(),
           );
 
           strippedToVersion.addAll({
             version.stripPreRelease(): version,
           });
-        }
-      } else {
-        final version = Version.parse(name).copy(
-          build: latestBuildNumber.toString(),
-        );
-
-        strippedToVersion.addAll({
-          version.stripPreRelease(): version,
-        });
+        } catch (_) {}
       }
     });
+
+    if (strippedToVersion.isEmpty) {
+      return Version.none;
+    }
 
     final primary = Version.primary(strippedToVersion.keys.toList());
     return strippedToVersion[primary] ?? Version.none;

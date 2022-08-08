@@ -1,5 +1,5 @@
 name: automatic_version_upgrader
-version: 0.1.0+3
+version: 0.1.0+4
 description: A command line interface to upgrade your app version automatically in a CI/CD flow.
 homepage: https://github.com/tomassasovsky/automatic_version_upgrader.dart
 

@@ -1,8 +1,12 @@
 # Changelog
 
+## 0.1.0+4
+
+* Bug-fix: Parsing names from Google Play Store breaks when the name is not a version.
+
 ## 0.1.0+3
 
-* Bug-fix: bad RegExp in for private key
+* Bug-fix: bad RegExp in for private key.
 * Bug-fix: Missing output directory in `google-play-version` command.
 * Bug-fix: Missing output directory in `app-store-version` command.
 
