@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="generator" content="made with love by dartdoc 5.1.0-dev">
+  <meta name="description" content="automatic_version_upgrader API docs, for the Dart programming language.">
+  <title>automatic_version_upgrader - Dart API docs</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="static-assets/github.css?v1">
+  <link rel="stylesheet" href="static-assets/styles.css?v1">
+  <link rel="icon" href="static-assets/favicon.png?v1">
+
+  
+</head>
+
+
+<body data-base-href=""
+      data-using-base-href="false">
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li class="self-crumb">automatic_version_upgrader package</li>
+  </ol>
+  <div class="self-name">automatic_version_upgrader</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<main>
+
+
+  <div id="dartdoc-main-content" class="main-content">
+      
+<section class="desc markdown">
+  <h1 id="automatic-version-upgrader">Automatic Version Upgrader</h1>
+<p><a href="https://github.com/tomassasovsky/automatic_version_upgrader/actions"><img src="https://github.com/tomassasovsky/automatic_version_upgrader/workflows/automatic_version_upgrader/badge.svg" alt="ci"></a>
+<a href="https://github.com/tomassasovsky/automatic_version_upgrader/actions"><img src="https://raw.githubusercontent.com/tomassasovsky/automatic_version_upgrader/main/coverage_badge.svg" alt="coverage"></a>
+<a href="https://pub.dartlang.org/packages/automatic_version_upgrader"><img src="https://img.shields.io/pub/v/automatic_version_upgrader.svg" alt="pub package"></a>
+<a href="https://pub.dev/packages/very_good_analysis"><img src="https://img.shields.io/badge/style-very_good_analysis-B22C89.svg" alt="style: very good analysis"></a>
+<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a></p>
+<hr>
+<p>A command line interface to upgrade your app version automatically in a CI/CD flow.</p>
+<h2 id="installing">Installing</h2>
+<pre class="language-sh"><code class="language-sh">dart pub global activate automatic_version_upgrader
+</code></pre>
+<h2 id="commands">Commands</h2>
+<h3 id="automatic_version_upgrader-google-play-version"><code>automatic_version_upgrader google-play-version</code></h3>
+<p>Check the latest version of your app on Google Play (includes internal testing) and upgrade the local version in your pubspec.yaml if necessary.</p>
+<p>Note: see <a href="https://developers.google.com/workspace/guides/create-credentials#service-account">here</a> for more information on how to get your Google Service Account credentials.</p>
+<pre class="language-sh"><code class="language-sh">Gets the latest version of the app from the Google Play Store.
+
+Usage: automatic_version_upgrader google-play-version
+-h, --help                                       Print this usage information.
+-p, --package-name (mandatory)                   The package name of the app.
+    --credentials                                The credentials for the Google Cloud Service Account.
+    --next=&lt;major|minor|patch|breaking|build&gt;    Updates the version number.
+
+          [breaking]                             Gets the next breaking version number that follows this one. Increments [major] if it is greater than zero, otherwise [minor], resets subsequent digits to zero, and strips any [preRelease] or [build] suffix.
+          [build] (default)                      Gets the next build number that follows this one. If this version is a pre-release, then it just strips the pre-release suffix. Otherwise, it increments the build. Note: If the latest version is actually bigger than the latest build, then the build number is reset to zero and the version grabbed will be the next patch to the latest version.
+          [major]                                Gets the next major version number that follows this one. If this version is a pre-release of a major version release (i.e. the minor and patch versions are zero), then it just strips the pre-release suffix. Otherwise, it increments the major version and resets the minor and patch.
+          [minor]                                Gets the next minor version number that follows this one. If this version is a pre-release of a minor version release (i.e. the patch version is zero), then it just strips the pre-release suffix. Otherwise, it increments the minor version and resets the patch.
+          [patch]                                Gets the next patch version number that follows this one. If this version is a pre-release, then it just strips the pre-release suffix. Otherwise, it increments the patch version.
+
+-u, --upgrade-mode=&lt;always|never|outdated&gt;       Updates the version in your app's pubspec.yaml file.
+
+          [always]                               Updates the app's version to the newest and ups the patch number.
+          [never] (default)                      Doesn't update the version.
+          [outdated]                             Updates the app's version if there's a newer one available. Otherwise, does nothing.
+</code></pre>
+<h4 id="usage">Usage</h4>
+<pre class="language-sh"><code class="language-sh"># Gets the latest version of the app from the Google Play Store.
+automatic_version_upgrader google-play-version --package-name=com.maps.google  --credentials=[the contents of your credentials.json file] 
+
+# Updates the app's version to the newest and ups the patch number.
+automatic_version_upgrader google-play-version --package-name=com.maps.google  --credentials=[the contents of your credentials.json file] --upgrade-mode=outdated
+
+# Updates the app's version to the newest and ups the major number.
+automatic_version_upgrader google-play-version --package-name=com.maps.google  --credentials=[the contents of your credentials.json file] --upgrade-mode=outdated --next=major
+</code></pre>
+<h3 id="automatic_version_upgrader-app-store-version"><code>automatic_version_upgrader app-store-version</code></h3>
+<p>Check the latest version of your app on App Store Connnect (includes TestFlight) and upgrade the local version in your pubspec.yaml if necessary.</p>
+<p>Note: see <a href="https://developer.apple.com/documentation/appstoreconnectapi">here</a> for more information on how to get your credentials for the App Store Connect API.</p>
+<pre class="language-sh"><code class="language-sh">Gets the latest version of the app from the App Store.
+
+Usage: automatic_version_upgrader app-store-version [arguments]
+-h, --help                                       Print this usage information.
+    --app-id (mandatory)                         The identifier of the app.
+    --private-key                                The private key from the App Store Connect account.
+    --key-id                                     The key id from the App Store Connect account.
+    --issuer-id                                  The private key's issuer id from the App Store Connect account.
+    --next=&lt;major|minor|patch|breaking|build&gt;    Updates the version number.
+
+          [breaking]                             Gets the next breaking version number that follows this one. Increments [major] if it's greater than zero, otherwise [minor], resets subsequent digits to zero, and strips any [preRelease] or [build] suffix.
+          [build] (default)                      Gets the next build number that follows this one. If this version is a pre-release, then it just strips the pre-release suffix. Otherwise, it increments the build. Note: If the latest version is actually bigger than the latest build, then the build number is reset to zero and the version grabbed will be the next patch to the latest version.
+          [major]                                Gets the next major version number that follows this one. If this version is a pre-release of a major version release (i.e. the minor and patch versions are zero), then it just strips the pre-release suffix. Otherwise, it increments the major version and resets the minor and patch.
+          [minor]                                Gets the next minor version number that follows this one. If this version is a pre-release of a minor version release (i.e. the patch version is zero), then it just strips the pre-release suffix. Otherwise, it increments the minor version and resets the patch.
+          [patch]                                Gets the next patch version number that follows this one. If this version is a pre-release, then it just strips the pre-release suffix. Otherwise, it increments the patch version.
+
+-u, --upgrade-mode=&lt;always|never|outdated&gt;       Updates the version in your app's pubspec.yaml file.
+
+          [always]                               Updates the app's version to the oldest plus a patch.
+          [never] (default)                      Doesn't update the version.
+          [outdated]                             Updates the app's version if there's a newer one available. Otherwise, does nothing.
+
+Run "automatic_version_upgrader help" to see global options.
+</code></pre>
+<h4 id="usage-2">Usage</h4>
+<pre class="language-sh"><code class="language-sh"># Gets the latest version of the app from App Store Connect.
+automatic_version_upgrader app-store-version --app-id=[your app id] --private-key=[your private key] key-id=[your key id] --issuer-id=[your issuer id] 
+
+# Updates the app's version to the newest and ups the patch number.
+automatic_version_upgrader google-play-version --app-id=[your app id] --private-key=[your private key] key-id=[your key id] --issuer-id=[your issuer id] --upgrade-mode=outdated
+
+# Updates the app's version to the newest and ups the major number.
+automatic_version_upgrader google-play-version --app-id=[your app id] --private-key=[your private key] key-id=[your key id] --issuer-id=[your issuer id] --upgrade-mode=outdated --next=major
+</code></pre>
+<h3 id="automatic_version_upgrader---help"><code>automatic_version_upgrader --help</code></h3>
+<p>See the complete list of commands and usage information.</p>
+<pre class="language-sh"><code class="language-sh">A command line interface to upgrade your app version automatically in a CI/CD flow.
+
+Usage: automatic_version_upgrader &lt;command&gt; [arguments]
+
+Global options:
+-h, --help            Print this usage information.
+    --version         Print the current version.
+    --analytics       Toggle anonymous usage statistics.
+
+          [false]     Disable anonymous usage statistics
+          [true]      Enable anonymous usage statistics
+
+    --[no-]verbose    Noisy logging, including all shell commands executed.
+
+Available commands:
+  app-store-version     Gets the latest version of the app from the App Store.
+  google-play-version   automatic_version_upgrader google-play-version
+                        Gets the latest version of the app from the Google Play Store.
+  update                Update Automatic Version Upgrader CLI.
+
+Run "automatic_version_upgrader help &lt;command&gt;" for more information about a command.
+</code></pre>
+</section>
+
+
+      <section class="summary">
+          <h2>Libraries</h2>
+        <dl>
+          <dt id="automatic_version_upgrader">
+  <span class="name"><a href="automatic_version_upgrader/automatic_version_upgrader-library.html">automatic_version_upgrader</a></span> 
+
+</dt>
+<dd>
+</dd>
+
+        </dl>
+      </section>
+
+  </div> <!-- /.main-content -->
+
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+  <li class="self-crumb">automatic_version_upgrader package</li>
+</ol>
+
+
+    <h5 class="hidden-xs"><span class="package-name">automatic_version_upgrader</span> <span class="package-kind">package</span></h5>
+    <ol>
+      <li class="section-title">Libraries</li>
+      <li><a href="automatic_version_upgrader/automatic_version_upgrader-library.html">automatic_version_upgrader</a></li>
+</ol>
+
+  </div>
+
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div>
+
+</main>
+
+<footer>
+  <span class="no-break">
+    automatic_version_upgrader
+      0.1.0
+  </span>
+
+  
+</footer>
+
+
+
+<script src="static-assets/highlight.pack.js?v1"></script>
+<script src="static-assets/script.js?v1"></script>
+
+
+
+</body>
+
+</html>
+
