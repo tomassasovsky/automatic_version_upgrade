@@ -26,25 +26,15 @@ Check the latest version of your app on Google Play (includes internal testing) 
 Note: see [here](https://developers.google.com/workspace/guides/create-credentials#service-account) for more information on how to get your Google Service Account credentials.
 
 ```sh
-Gets the latest version of the app from the Google Play Store.
+Gets the latest version code of the app from the Google Play Console.
 
-Usage: automatic_version_upgrader google-play-version
--h, --help                                       Print this usage information.
--p, --package-name (mandatory)                   The package name of the app.
-    --credentials                                The credentials for the Google Cloud Service Account.
-    --next=<major|minor|patch|breaking|build>    Updates the version number.
+Usage: automatic_version_upgrader google-play-version-code
+-h, --help                        Print this usage information.
+-p, --package-name (mandatory)    The package name of the app.
+    --credentials                 The credentials for the Google Cloud Service Account.
+-u, --[no-]upgrade                Updates the Android app's version code to the oldest plus one.
 
-          [breaking]                             Gets the next breaking version number that follows this one. Increments [major] if it is greater than zero, otherwise [minor], resets subsequent digits to zero, and strips any [preRelease] or [build] suffix.
-          [build] (default)                      Gets the next build number that follows this one. If this version is a pre-release, then it just strips the pre-release suffix. Otherwise, it increments the build. Note: If the latest version is actually bigger than the latest build, then the build number is reset to zero and the version grabbed will be the next patch to the latest version.
-          [major]                                Gets the next major version number that follows this one. If this version is a pre-release of a major version release (i.e. the minor and patch versions are zero), then it just strips the pre-release suffix. Otherwise, it increments the major version and resets the minor and patch.
-          [minor]                                Gets the next minor version number that follows this one. If this version is a pre-release of a minor version release (i.e. the patch version is zero), then it just strips the pre-release suffix. Otherwise, it increments the minor version and resets the patch.
-          [patch]                                Gets the next patch version number that follows this one. If this version is a pre-release, then it just strips the pre-release suffix. Otherwise, it increments the patch version.
-
--u, --upgrade-mode=<always|never|outdated>       Updates the version in your app's pubspec.yaml file.
-
-          [always]                               Updates the app's version to the newest and ups the patch number.
-          [never] (default)                      Doesn't update the version.
-          [outdated]                             Updates the app's version if there's a newer one available. Otherwise, does nothing.
+Run "automatic_version_upgrader help" to see global options.
 ```
 
 #### Usage
@@ -54,10 +44,7 @@ Usage: automatic_version_upgrader google-play-version
 automatic_version_upgrader google-play-version --package-name=com.maps.google  --credentials=[the contents of your credentials.json file] 
 
 # Updates the app's version to the newest and ups the patch number.
-automatic_version_upgrader google-play-version --package-name=com.maps.google  --credentials=[the contents of your credentials.json file] --upgrade-mode=outdated
-
-# Updates the app's version to the newest and ups the major number.
-automatic_version_upgrader google-play-version --package-name=com.maps.google  --credentials=[the contents of your credentials.json file] --upgrade-mode=outdated --next=major
+automatic_version_upgrader google-play-version --package-name=com.maps.google  --credentials=[the contents of your credentials.json file] -u
 ```
 
 
@@ -100,10 +87,10 @@ Run "automatic_version_upgrader help" to see global options.
 automatic_version_upgrader app-store-version --app-id=[your app id] --private-key=[your private key] key-id=[your key id] --issuer-id=[your issuer id] 
 
 # Updates the app's version to the newest and ups the patch number.
-automatic_version_upgrader google-play-version --app-id=[your app id] --private-key=[your private key] key-id=[your key id] --issuer-id=[your issuer id] --upgrade-mode=outdated
+automatic_version_upgrader app-store-version --app-id=[your app id] --private-key=[your private key] key-id=[your key id] --issuer-id=[your issuer id] --upgrade-mode=outdated
 
 # Updates the app's version to the newest and ups the major number.
-automatic_version_upgrader google-play-version --app-id=[your app id] --private-key=[your private key] key-id=[your key id] --issuer-id=[your issuer id] --upgrade-mode=outdated --next=major
+automatic_version_upgrader app-store-version --app-id=[your app id] --private-key=[your private key] key-id=[your key id] --issuer-id=[your issuer id] --upgrade-mode=outdated --next=major
 ```
 
 ### `automatic_version_upgrader --help`
@@ -126,10 +113,10 @@ Global options:
     --[no-]verbose    Noisy logging, including all shell commands executed.
 
 Available commands:
-  app-store-version     Gets the latest version of the app from the App Store.
-  google-play-version   automatic_version_upgrader google-play-version
-                        Gets the latest version of the app from the Google Play Store.
-  update                Update Automatic Version Upgrader CLI.
+  app-store-version          Gets the latest version of the app from the App Store.
+  google-play-version-code   automatic_version_upgrader google-play-version-code
+                             Gets the latest version code of the app from the Google Play Console.
+  update                     Update Automatic Version Upgrader CLI.
 
 Run "automatic_version_upgrader help <command>" for more information about a command.
 ```

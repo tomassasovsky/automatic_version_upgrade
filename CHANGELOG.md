@@ -1,8 +1,20 @@
 # Changelog
 
-## 0.1.0-beta+5
+## 0.1.0+7
 
-* Updated app_store_connect_version to 0.1.0+1
+* Now using the android version code from the google play console.
+
+## 0.1.0-beta+7
+
+* Bug-fix: Using the android version code to generate the version name.
+
+## 0.1.0-beta+6
+
+* Using the android version code to generate the version name.
+
+## 0.1.0+5
+
+* Updated app_store_connect_version to 0.1.0+1.
 
 ## 0.1.0+4
 

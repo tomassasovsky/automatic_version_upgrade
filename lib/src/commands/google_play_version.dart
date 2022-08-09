@@ -7,16 +7,14 @@ import 'package:googleapis/androidpublisher/v3.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:meta/meta.dart';
-import 'package:pub_semver/pub_semver.dart';
-import 'package:pubspec/pubspec.dart';
 import 'package:universal_io/io.dart';
 
 final RegExp _packageNameRegExp =
     RegExp(r'^([A-Za-z]{1}[A-Za-z\d_]*\.)+[A-Za-z][A-Za-z\d_]*$');
 
 /// {@template update_command}
-/// `automatic_version_upgrader google-play-version` command which gets the
-/// current version of the app from the Google Play Store.
+/// `automatic_version_upgrader google-play-version-code` command which gets the
+/// current (latest) version code of the app from the Google Play Store.
 /// {@endtemplate}
 class GooglePlayVersionCommand extends Command<int> {
   /// {@macro update_command}
@@ -35,50 +33,10 @@ class GooglePlayVersionCommand extends Command<int> {
         defaultsTo: Platform.environment['GCLOUD_SERVICE_ACCOUNT_CREDENTIALS'],
         help: 'The credentials for the Google Cloud Service Account.',
       )
-      ..addOption(
-        'next',
-        allowed: ['major', 'minor', 'patch', 'breaking', 'build'],
-        allowedHelp: {
-          'major': 'Gets the next major version number that follows this one. '
-              'If this version is a pre-release of a major version '
-              'release (i.e. the minor and patch versions are zero), then it '
-              'just strips the pre-release suffix. Otherwise, it increments '
-              'the major version and resets the minor and patch.',
-          'minor': 'Gets the next minor version number that follows this one. '
-              'If this version is a pre-release of a minor version '
-              'release (i.e. the patch version is zero), then it just strips '
-              'the pre-release suffix. Otherwise, it increments the minor '
-              'version and resets the patch. ',
-          'patch': 'Gets the next patch version number that follows this one. '
-              'If this version is a pre-release, then it just strips the '
-              'pre-release suffix. Otherwise, it increments the patch version.',
-          'breaking': 'Gets the next breaking version number that follows '
-              "this one. Increments [major] if it's greater than zero, "
-              'otherwise [minor], resets subsequent digits to zero, '
-              'and strips any [preRelease] or [build] suffix.',
-          'build': 'Gets the next build number that follows this one. '
-              'If this version is a pre-release, then it just strips the '
-              'pre-release suffix. Otherwise, it increments the build. '
-              'Note: If the latest version is actually bigger than the latest '
-              'build, then the build number is reset to zero and the version '
-              'grabbed will be the next patch to the latest version.',
-        },
-        help: 'Updates the version number.',
-        defaultsTo: 'build',
-        valueHelp: 'major|minor|patch|breaking|build',
-      )
-      ..addOption(
-        'upgrade-mode',
+      ..addFlag(
+        'upgrade',
         abbr: 'u',
-        valueHelp: 'always|never|outdated',
-        defaultsTo: 'never',
-        help: "Updates the version in your app's pubspec.yaml file.",
-        allowedHelp: {
-          'always': "Updates the app's version to the oldest plus a patch.",
-          'never': "Doesn't update the version.",
-          'outdated': "Updates the app's version if there's a "
-              'newer one available. Otherwise, does nothing. ',
-        },
+        help: "Updates the Android app's version code to the oldest plus one.",
       );
   }
 
@@ -86,16 +44,17 @@ class GooglePlayVersionCommand extends Command<int> {
 
   @override
   String get description =>
-      'Gets the latest version of the app from the Google Play Store.';
+      'Gets the latest version code of the app from the Google Play Console.';
 
   @override
   String get summary => '$invocation\n$description';
 
   @override
-  String get name => 'google-play-version';
+  String get name => 'google-play-version-code';
 
   @override
-  String get invocation => 'automatic_version_upgrader google-play-version';
+  String get invocation =>
+      'automatic_version_upgrader google-play-version-code';
 
   /// [ArgResults] which can be overridden for testing.
   @visibleForTesting
@@ -113,8 +72,7 @@ class GooglePlayVersionCommand extends Command<int> {
   Future<int> run() async {
     final accountCredentialsArg = _credentials;
     final packageName = _packageName;
-    final upgradeMode = _upgradeMode;
-    final next = _next;
+    final upgrade = _upgrade;
     final outputDir = _outputDirectory;
 
     _logger.write('\n');
@@ -133,6 +91,7 @@ class GooglePlayVersionCommand extends Command<int> {
       usageException(_invalidCredentialsError);
     }
 
+    // Get the latest version code from the Google Play Console.
     final appLatestVersionProgress =
         _logger.progress('Getting latest version...');
 
@@ -144,70 +103,48 @@ class GooglePlayVersionCommand extends Command<int> {
       edit.id!,
     );
 
-    final latestVersion = list.latestVersion;
+    final latestVersionCode = list.latestVersionCode;
 
     appLatestVersionProgress.update('Cleaning up');
     await _deleteAppEdit(publisherApi, packageName, edit);
 
     appLatestVersionProgress.complete(
       'The latest version in Google Play Console is ${green.wrap(
-        list.latestVersion.toString(),
+        latestVersionCode.toString(),
       )}',
     );
 
-    if (upgradeMode == UpgradeMode.never) {
-      exit(ExitCode.success.code);
-    }
-
-    late final PubSpec pubspec;
-
-    try {
-      pubspec = await PubSpec.load(outputDir);
-    } catch (e) {
-      _logger.err(
-        'An error occured loading the pubspec.yaml file. '
-        'Check that you are in the root of the project and '
-        'that the file is properly formatted.',
-      );
-      exit(ExitCode.ioError.code);
-    }
-
-    final currentVersion = pubspec.version ?? Version.none;
-    final hasNewerVersion = currentVersion <= latestVersion;
-    final shouldUpgrade = upgradeMode == UpgradeMode.always ||
-        hasNewerVersion && upgradeMode == UpgradeMode.outdated;
-
-    final latestIsPreRelease = latestVersion.isPreRelease;
-
-    if (!shouldUpgrade) {
-      _logger.success(
-        'The app version is already higher than the one '
-        'in Google Cloud Console.',
-      );
+    if (!upgrade) {
       exit(ExitCode.success.code);
     }
 
     final versionUpgradingProgress =
-        _logger.progress('Upgrading the app to the latest version');
-
-    late final Version nextVersion;
-    if (next == NextVersion.build) {
-      if (latestIsPreRelease) {
-        nextVersion = latestVersion.next(next);
-      } else {
-        nextVersion = latestVersion.next(NextVersion.patch).next(next);
-      }
-    } else {
-      nextVersion = latestVersion.next(next).next(next);
-    }
+        _logger.progress('Upgrading the app to the latest version...');
 
     try {
-      final updatedPubspc = pubspec.copy(version: nextVersion);
-      await updatedPubspc.save(outputDir);
+      final pubspecVersionChanger = PubspecVersionChanger(logger: _logger);
+      final currentVersion = pubspecVersionChanger.currentVersion(outputDir);
+      final currentVersionCode = int.tryParse(currentVersion.build.join()) ?? 1;
 
-      versionUpgradingProgress
-          .complete(green.wrap('Version upgraded to $nextVersion'));
-      // _logger.success('The app version has been upgraded to $nextVersion.');
+      final newVersionCode = latestVersionCode + 1;
+
+      if (currentVersionCode >= newVersionCode) {
+        versionUpgradingProgress.complete(
+          'The app version is already at the latest version. '
+          'No need to upgrade.',
+        );
+        exit(ExitCode.success.code);
+      }
+
+      final newVersion = currentVersion.copy(build: newVersionCode.toString());
+
+      pubspecVersionChanger.updateVersionCode(
+        outputDir,
+        newVersion.toString(),
+      );
+
+      versionUpgradingProgress.complete();
+      _logger.success('The app version has been upgraded to $newVersion.');
     } catch (e) {
       versionUpgradingProgress.fail(
         'An error occured updating the pubspec.yaml file. '
@@ -228,10 +165,9 @@ class GooglePlayVersionCommand extends Command<int> {
     return cred!;
   }
 
-  /// Gets the upgrade mode for App Store Connect.
-  UpgradeMode get _upgradeMode {
-    return UpgradeMode.values
-        .byName(_argResults['upgrade-mode'] as String? ?? 'never');
+  /// Whether or not the app version code should be upgraded.
+  bool get _upgrade {
+    return _argResults['upgrade'] as bool? ?? false;
   }
 
   /// Gets the package name for the app.
@@ -240,10 +176,6 @@ class GooglePlayVersionCommand extends Command<int> {
     _validatepackageName(packageName);
     return packageName;
   }
-
-  /// Gets the next version for App Store Connect.
-  NextVersion get _next =>
-      NextVersion.values.byName(_argResults['next'] as String? ?? 'never');
 
   Directory get _outputDirectory {
     final rest = List<String>.from(_argResults.rest);

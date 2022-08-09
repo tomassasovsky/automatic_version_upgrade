@@ -219,8 +219,10 @@ class AppStoreVersionCommand extends Command<int> {
     }
 
     try {
-      final updatedPubspc = pubspec.copy(version: nextVersion);
-      await updatedPubspc.save(_outputDirectory);
+      PubspecVersionChanger(logger: _logger).updateVersionCode(
+        _outputDirectory,
+        nextVersion.toString(),
+      );
 
       versionUpgradingProgress.complete();
       _logger.success('The app version has been upgraded to $nextVersion.');
