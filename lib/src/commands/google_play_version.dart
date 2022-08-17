@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
@@ -98,12 +99,17 @@ class GooglePlayVersionCommand extends Command<int> {
     final publisherApi = AndroidPublisherApi(baseClient);
     final edit = await _createAppEdit(publisherApi, packageName);
 
-    final list = await publisherApi.edits.tracks.list(
+    final bundles = await publisherApi.edits.bundles.list(
       packageName,
       edit.id!,
     );
 
-    final latestVersionCode = list.latestVersionCode;
+    final defaultBundleList = <Bundle>[Bundle(versionCode: 1)];
+
+    final versionCodes =
+        (bundles.bundles ?? defaultBundleList).map((e) => e.versionCode ?? 1);
+
+    final latestVersionCode = versionCodes.reduce(max);
 
     appLatestVersionProgress.update('Cleaning up');
     await _deleteAppEdit(publisherApi, packageName, edit);
