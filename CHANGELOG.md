@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0+8
+
+* Getting the android version code from the bundles instead of tracks from the google play console.
+
 ## 0.1.0+7
 
 * Now using the android version code from the google play console.
